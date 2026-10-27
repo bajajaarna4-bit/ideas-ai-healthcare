@@ -1,3 +1,4 @@
+import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,7 +16,9 @@ app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
     description="Backend API for HealthSathi AI — Your Multilingual AI Health Companion",
-    lifespan=lifespan
+    lifespan=lifespan,
+    docs_url="/api/docs",
+    openapi_url="/api/openapi.json"
 )
 
 # Safe CORS configuration
@@ -26,6 +29,10 @@ allowed_origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
 ]
+
+vercel_url = os.getenv("VERCEL_URL")
+if vercel_url:
+    allowed_origins.append(f"https://{vercel_url}")
 
 app.add_middleware(
     CORSMiddleware,
@@ -45,6 +52,7 @@ app.include_router(wellness.router)
 app.include_router(user.router)
 
 @app.get("/")
+@app.get("/api")
 def root():
     return {
         "message": "Welcome to HealthSathi AI API",
